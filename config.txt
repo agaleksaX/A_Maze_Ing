@@ -1,0 +1,8 @@
+# Maze config
+
+WIDTH=1
+HEIGHT=10
+SEED=42
+ENTRY=0,0
+EXIT=9,9
+OUTPUT_FILE=maze.txt
