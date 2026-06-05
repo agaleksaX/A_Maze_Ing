@@ -4,10 +4,11 @@ from maze.generator import MazeGenerator
 from maze.solver import MazeSolver
 from output.writer import MazeWriter
 from config.parser import ConfigParser
+from visual.renderer_3 import MazeRenderer
 
 
 def main() -> None:
-    
+
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
         return
@@ -22,17 +23,20 @@ def main() -> None:
     entry = config["ENTRY"]
     exit_ = config["EXIT"]
     output_file = config["OUTPUT_FILE"]
-    
+
     maze = Maze(width, height)
     gen = MazeGenerator(maze, seed)
     lab = gen.generate()
     solver = MazeSolver(lab, entry, exit_)
     path = solver.solve()
+    renderer = MazeRenderer(lab, entry, exit_, path)
+    renderer.render()
     writer = MazeWriter(lab, entry, exit_, path, output_file)
     writer.write()
+    print()
     print("Maze written to", output_file)
 
 
 if __name__ == "__main__":
-    
+
     main()
