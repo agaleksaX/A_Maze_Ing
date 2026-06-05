@@ -1,19 +1,29 @@
+from config.parser import ConfigParser
 from maze.generator import MazeGenerator
 from maze.maze import Maze
 from maze.solver import MazeSolver
 from output.writer import MazeWriter
 
-maze = Maze(10, 10)
-gen = MazeGenerator(maze, seed=42)
-lab = gen.generate()
-solver = MazeSolver(lab, (0, 0), (9, 9))
+parser = ConfigParser("config.txt")
+config = parser.parse()
 
+maze = Maze(config["WIDTH"], config["HEIGHT"])
+
+gen = MazeGenerator(maze, seed=config["SEED"])
+lab = gen.generate()
+
+solver = MazeSolver(lab, config["ENTRY"], config["EXIT"])
 path = solver.solve()
 
-write = MazeWriter(lab, (0, 0), (9, 9), path, "output_file.txt")
+writer = MazeWriter(
+    lab,
+    config["ENTRY"],
+    config["EXIT"],
+    path,
+    config["OUTPUT_FILE"],
+)
 
-write.write()
+writer.write()
 
-with open("output_file.txt", "r", encoding="utf-8") as file:
+with open(config["OUTPUT_FILE"], "r", encoding="utf-8") as file:
     print(file.read())
-    

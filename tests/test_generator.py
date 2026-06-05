@@ -1,7 +1,6 @@
 from maze.generator import MazeGenerator
 from maze.maze import Maze
 
-
 maze = Maze(4, 4)
 gen = MazeGenerator(maze, seed=42)
 gen.generate()
@@ -20,6 +19,6 @@ for row in maze.cells:
             opened_walls += 1
         if not cell.east:
             opened_walls += 1
-            
+
 print(visited_count)
 print(opened_walls)
