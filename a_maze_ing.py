@@ -4,7 +4,7 @@ from maze.generator import MazeGenerator
 from maze.solver import MazeSolver
 from output.writer import MazeWriter
 from config.parser import ConfigParser
-from visual.renderer_3 import MazeRenderer
+from visual.renderer import MazeRenderer
 
 
 def main() -> None:

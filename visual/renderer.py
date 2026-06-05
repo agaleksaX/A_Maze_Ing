@@ -2,11 +2,11 @@ from maze.maze import Maze
 
 
 class MazeRenderer:
-    WALL = "\033[96m█\033[0m"   # bright cyan
-    EMPTY = " "
-    ENTRY = "\033[92m█\033[0m"  # bright green
-    EXIT = "\033[91m█\033[0m"   # bright red
-    PATH = "\033[93m▒\033[0m"   # bright yellow
+    WALL = "\033[96m██\033[0m"   # bright cyan
+    EMPTY = "  "
+    ENTRY = "\033[92m██\033[0m"  # bright green
+    EXIT = "\033[91m██\033[0m"   # bright red
+    PATH = "\033[93m██\033[0m"   # bright yellow
 
     def __init__(
         self,
@@ -39,11 +39,7 @@ class MazeRenderer:
 
         return canvas
 
-    def _create_canvas(
-        self,
-        height: int,
-        width: int,
-    ) -> list[list[str]]:
+    def _create_canvas(self, height: int, width: int) -> list[list[str]]:
         canvas = []
 
         for _ in range(height):
@@ -56,12 +52,7 @@ class MazeRenderer:
 
         return canvas
 
-    def _draw_cell(
-        self,
-        canvas: list[list[str]],
-        x: int,
-        y: int,
-    ) -> None:
+    def _draw_cell(self, canvas: list[list[str]], x: int, y: int) -> None:
         cell = self.maze.get_cell(x, y)
 
         cx = x * 2 + 1
