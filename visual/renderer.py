@@ -1,12 +1,10 @@
+import random
 from maze.maze import Maze
 
 
 class MazeRenderer:
-    WALL = "\033[96m██\033[0m"   # bright cyan
+
     EMPTY = "  "
-    ENTRY = "\033[92m██\033[0m"  # bright green
-    EXIT = "\033[91m██\033[0m"   # bright red
-    PATH = "\033[93m██\033[0m"   # bright yellow
 
     def __init__(
         self,
@@ -14,12 +12,19 @@ class MazeRenderer:
         entry: tuple[int, int],
         exit_: tuple[int, int],
         path: str,
+        show_path: bool = True,
+        colors: dict[str, str] | None = None,
     ):
         self.maze = maze
         self.entry = entry
         self.exit = exit_
         self.path = path
         self.path_cells = self._build_path()
+        self.show_path = show_path
+        if colors is None:
+            self.colors = self.generate_colors()
+        else:
+            self.colors = colors
 
     def render(self) -> None:
         canvas = self._build_canvas()
@@ -46,7 +51,7 @@ class MazeRenderer:
             row = []
 
             for _ in range(width):
-                row.append(self.WALL)
+                row.append(self._wall())
 
             canvas.append(row)
 
@@ -79,13 +84,13 @@ class MazeRenderer:
 
     def _cell_symbol(self, position: tuple[int, int]) -> str:
         if position == self.entry:
-            return self.ENTRY
+            return self._entry()
 
         if position == self.exit:
-            return self.EXIT
+            return self._exit()
 
-        if position in self.path_cells:
-            return self.PATH
+        if self.show_path and position in self.path_cells:
+            return self._path()
 
         return self.EMPTY
 
@@ -94,8 +99,12 @@ class MazeRenderer:
         current: tuple[int, int],
         neighbor: tuple[int, int],
     ) -> str:
-        if current in self.path_cells and neighbor in self.path_cells:
-            return self.PATH
+        if (
+            self.show_path
+            and current in self.path_cells
+            and neighbor in self.path_cells
+        ):
+            return self._path()
 
         return self.EMPTY
 
@@ -116,3 +125,28 @@ class MazeRenderer:
             path_cells.add((x, y))
 
         return path_cells
+
+    @staticmethod
+    def generate_colors() -> dict[str, str]:
+        colors = [91, 92, 93, 94, 95, 96, 97]
+
+        random.shuffle(colors)
+
+        return {
+            "wall": f"\033[{colors[0]}m██\033[0m",
+            "entry": f"\033[{colors[1]}m██\033[0m",
+            "exit": f"\033[{colors[2]}m██\033[0m",
+            "path": f"\033[{colors[3]}m██\033[0m",
+        }
+
+    def _wall(self) -> str:
+        return self.colors["wall"]
+
+    def _entry(self) -> str:
+        return self.colors["entry"]
+
+    def _exit(self) -> str:
+        return self.colors["exit"]
+
+    def _path(self) -> str:
+        return self.colors["path"]
