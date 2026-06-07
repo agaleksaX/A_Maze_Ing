@@ -3,6 +3,7 @@ from maze.maze import Maze
 
 
 class MazeRenderer:
+    """Render maze in terminal."""
 
     EMPTY = "  "
 
@@ -27,12 +28,16 @@ class MazeRenderer:
             self.colors = colors
 
     def render(self) -> None:
+        """Display maze in terminal."""
+
         canvas = self._build_canvas()
 
         for row in canvas:
             print("".join(row))
 
     def _build_canvas(self) -> list[list[str]]:
+        """Build visual maze canvas."""
+
         height = self.maze.height * 2 + 1
         width = self.maze.width * 2 + 1
 
@@ -45,6 +50,8 @@ class MazeRenderer:
         return canvas
 
     def _create_canvas(self, height: int, width: int) -> list[list[str]]:
+        """Create empty render canvas."""
+
         canvas = []
 
         for _ in range(height):
@@ -58,6 +65,8 @@ class MazeRenderer:
         return canvas
 
     def _draw_cell(self, canvas: list[list[str]], x: int, y: int) -> None:
+        """Draw one maze cell."""
+
         cell = self.maze.get_cell(x, y)
 
         cx = x * 2 + 1
@@ -83,6 +92,10 @@ class MazeRenderer:
             canvas[cy][cx - 1] = self._path_or_empty(current, neighbor)
 
     def _cell_symbol(self, position: tuple[int, int]) -> str:
+        """Return visual symbol for cell."""
+        if position in self.maze.pattern_cells:
+            return self._pattern()
+
         if position == self.entry:
             return self._entry()
 
@@ -99,6 +112,8 @@ class MazeRenderer:
         current: tuple[int, int],
         neighbor: tuple[int, int],
     ) -> str:
+        """Return path or empty space."""
+
         if (
             self.show_path
             and current in self.path_cells
@@ -109,6 +124,8 @@ class MazeRenderer:
         return self.EMPTY
 
     def _build_path(self) -> set[tuple[int, int]]:
+        """Convert path string into coordinate set."""
+
         x, y = self.entry
         path_cells = {(x, y)}
 
@@ -128,6 +145,7 @@ class MazeRenderer:
 
     @staticmethod
     def generate_colors() -> dict[str, str]:
+        """Generate random render colors."""
         colors = [91, 92, 93, 94, 95, 96, 97]
 
         random.shuffle(colors)
@@ -137,6 +155,7 @@ class MazeRenderer:
             "entry": f"\033[{colors[1]}m██\033[0m",
             "exit": f"\033[{colors[2]}m██\033[0m",
             "path": f"\033[{colors[3]}m██\033[0m",
+            "pattern": f"\033[{colors[4]}m██\033[0m",
         }
 
     def _wall(self) -> str:
@@ -150,3 +169,7 @@ class MazeRenderer:
 
     def _path(self) -> str:
         return self.colors["path"]
+
+    def _pattern(self) -> str:
+        """Return pattern color symbol."""
+        return self.colors["pattern"]

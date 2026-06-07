@@ -1,0 +1,81 @@
+# mazegen-amazeing
+
+Reusable maze generation package for the A-Maze-ing project.
+
+## Installation
+
+From the project root after building the package:
+
+```bash
+pip install dist/mazegen_amazeing-1.0.0-py3-none-any.whl
+```
+
+Or from the source folder:
+
+```bash
+pip install .
+```
+
+## Basic usage
+
+```python
+from mazegen import Maze, MazeGenerator, MazeSolver
+
+maze = Maze(width=15, height=15)
+generator = MazeGenerator(maze, seed=42)
+generated = generator.generate()
+
+solver = MazeSolver(generated, entry=(0, 0), exit_=(14, 14))
+path = solver.solve()
+
+print(path)
+print(generated.get_cell(0, 0).north)
+```
+
+## Custom parameters
+
+The generator accepts:
+
+- `width`: maze width in cells;
+- `height`: maze height in cells;
+- `seed`: optional integer seed for reproducible generation.
+
+```python
+maze = Maze(20, 10)
+generator = MazeGenerator(maze, seed=123)
+maze = generator.generate()
+```
+
+## Accessing the structure
+
+The maze object stores cells in `maze.cells`, row by row.
+Each cell has four boolean wall attributes:
+
+- `north`
+- `east`
+- `south`
+- `west`
+
+`True` means the wall is closed. `False` means the wall is open.
+
+```python
+cell = maze.get_cell(3, 2)
+print(cell.north, cell.east, cell.south, cell.west)
+```
+
+## Accessing a solution
+
+Use `MazeSolver` to compute a shortest valid path between two cells.
+The result is a string made of `N`, `E`, `S`, `W` directions.
+
+```python
+solver = MazeSolver(maze, (0, 0), (14, 14))
+path = solver.solve()
+```
+
+## Algorithm
+
+The package uses recursive backtracking implemented iteratively with a stack.
+This creates a perfect maze on all non-pattern cells: the structure is connected
+and contains no cycles. The optional `42` pattern is represented by fully closed
+cells and is skipped by the generator.

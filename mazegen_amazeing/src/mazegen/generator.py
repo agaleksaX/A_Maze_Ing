@@ -1,14 +1,14 @@
 import random
 
-from maze.cell import Cell
-from maze.maze import Maze
+from mazegen.cell import Cell
+from mazegen.maze import Maze
 
 
 class MazeGenerator:
-    """Generate random maze structures."""
+    """Generate random perfect maze structures."""
 
     def __init__(self, maze: Maze, seed: int | None = None) -> None:
-        """Initialize maze generator."""
+        """Initialize generator with maze object and optional seed."""
         self.maze = maze
         self.random = random.Random(seed)
         self.pattern_cells: set[tuple[int, int]] = set()
@@ -16,7 +16,6 @@ class MazeGenerator:
     def generate(self) -> Maze:
         """Generate and return a maze."""
         self._apply_42_pattern()
-
         start = self.maze.get_cell(0, 0)
 
         if (start.x, start.y) in self.pattern_cells:
@@ -34,7 +33,6 @@ class MazeGenerator:
                 self._remove_wall(current, neighbor, direction)
                 neighbor.visited = True
                 stack.append(neighbor)
-
             else:
                 stack.pop()
 
@@ -52,7 +50,6 @@ class MazeGenerator:
     def _get_unvisited_neighbors(self, cell: Cell) -> list[tuple[str, Cell]]:
         """Return all unvisited neighboring cells."""
         neighbors: list[tuple[str, Cell]] = []
-
         directions = [
             ("N", cell.x, cell.y - 1),
             ("E", cell.x + 1, cell.y),
@@ -84,15 +81,12 @@ class MazeGenerator:
         if direction == "N":
             current.north = False
             neighbor.south = False
-
         elif direction == "E":
             current.east = False
             neighbor.west = False
-
         elif direction == "S":
             current.south = False
             neighbor.north = False
-
         elif direction == "W":
             current.west = False
             neighbor.east = False
@@ -119,25 +113,19 @@ class MazeGenerator:
     def _build_42_pattern(self) -> set[tuple[int, int]]:
         """Return centered coordinates used to draw the 42 pattern."""
         shape = {
-            # 4
             (0, 0), (0, 1), (0, 2),
             (1, 2),
             (2, 0), (2, 1), (2, 2), (2, 3), (2, 4),
-
-            # 2
             (4, 0), (5, 0), (6, 0),
             (6, 1),
             (4, 2), (5, 2), (6, 2),
             (4, 3),
             (4, 4), (5, 4), (6, 4),
         }
-
         pattern_width = 7
         pattern_height = 5
-
         start_x = (self.maze.width - pattern_width) // 2
         start_y = (self.maze.height - pattern_height) // 2
-
         result: set[tuple[int, int]] = set()
 
         for x, y in shape:

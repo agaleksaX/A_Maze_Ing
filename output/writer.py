@@ -3,6 +3,7 @@ from maze.cell import Cell
 
 
 class MazeWriter:
+    """Write maze and solution into output file."""
 
     def __init__(
         self,
@@ -19,6 +20,7 @@ class MazeWriter:
         self.output_file = output_file
 
     def write(self) -> None:
+        """Save maze structure and solution to file."""
 
         lines = self._maze_to_lines()
         with open(self.output_file, "w", encoding="utf-8") as file:
@@ -36,6 +38,7 @@ class MazeWriter:
             file.write(self.path + "\n")
 
     def _cell_to_hex(self, cell: Cell) -> str:
+        """Convert cell walls into hexadecimal representation."""
 
         value = 0
         digits = "0123456789ABCDEF"
@@ -55,6 +58,7 @@ class MazeWriter:
         return digits[value]
 
     def _maze_to_lines(self) -> list[str]:
+        """Convert maze into text lines."""
 
         lines = []
         for row in self.maze.cells:
