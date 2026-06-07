@@ -15,13 +15,16 @@ class MazeRenderer:
         path: str,
         show_path: bool = True,
         colors: dict[str, str] | None = None,
-    ):
+        show_pattern: bool = True,
+    ) -> None:
         self.maze = maze
         self.entry = entry
         self.exit = exit_
         self.path = path
         self.path_cells = self._build_path()
         self.show_path = show_path
+        self.show_pattern = show_pattern
+
         if colors is None:
             self.colors = self.generate_colors()
         else:
@@ -94,7 +97,10 @@ class MazeRenderer:
     def _cell_symbol(self, position: tuple[int, int]) -> str:
         """Return visual symbol for cell."""
         if position in self.maze.pattern_cells:
-            return self._pattern()
+            if self.show_pattern:
+                return self._pattern()
+
+            return self._wall()
 
         if position == self.entry:
             return self._entry()

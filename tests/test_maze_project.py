@@ -136,6 +136,27 @@ class TestMazeProject(unittest.TestCase):
         finally:
             os.remove(config_file)
 
+    def test_non_perfect_generation(self) -> None:
+        maze = Maze(15, 15)
+
+        generator = MazeGenerator(
+            maze,
+            seed=42,
+            perfect=False,
+        )
+
+        generated = generator.generate()
+
+        solver = MazeSolver(
+            generated,
+            (0, 0),
+            (14, 14),
+        )
+
+        path = solver.solve()
+
+        self.assertNotEqual(path, "")
+
 
 if __name__ == "__main__":
     unittest.main()

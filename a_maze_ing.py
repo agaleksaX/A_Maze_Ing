@@ -1,7 +1,7 @@
 import random
 import sys
+import time
 from typing import cast
-
 from config.parser import ConfigParser
 from maze.generator import MazeGenerator
 from maze.maze import Maze
@@ -16,11 +16,16 @@ def generate_maze(
     seed: int,
     entry: tuple[int, int],
     exit_: tuple[int, int],
+    perfect: bool,
 ) -> tuple[Maze, str]:
     """Generate a maze and return its shortest solution path."""
     maze = Maze(width, height)
 
-    gen = MazeGenerator(maze, seed)
+    gen = MazeGenerator(
+        maze,
+        seed,
+        perfect,
+    )
     lab = gen.generate()
 
     solver = MazeSolver(lab, entry, exit_)
@@ -49,6 +54,7 @@ def regenerate_maze(
     width: int,
     height: int,
     seed: int,
+    perfect: bool,
 ) -> tuple[Maze, str, tuple[int, int], tuple[int, int]]:
     """Generate maze with random entry and exit outside 42 pattern."""
     while True:
@@ -59,15 +65,105 @@ def regenerate_maze(
             continue
 
         try:
-            lab, path = generate_maze(width, height, seed, entry, exit_)
+            lab, path = generate_maze(
+                width,
+                height,
+                seed,
+                entry,
+                exit_,
+                perfect,
+            )
 
         except ValueError:
             continue
 
         if not is_forbidden_position(entry, lab) and not is_forbidden_position(
-            exit_, lab
+            exit_,
+            lab,
         ):
             return lab, path, entry, exit_
+
+
+def animate_path(
+    lab: Maze,
+    entry: tuple[int, int],
+    exit_: tuple[int, int],
+    path: str,
+    colors: dict[str, str],
+    show_pattern: bool,
+) -> None:
+    """Animate shortest path rendering step by step."""
+    partial_path = ""
+
+    for direction in path:
+        partial_path += direction
+        print("\033c", end="")
+
+        renderer = MazeRenderer(
+            lab,
+            entry,
+            exit_,
+            partial_path,
+            True,
+            colors,
+            show_pattern,
+        )
+        renderer.render()
+
+        time.sleep(0.05)
+
+
+def animate_generation_and_path(
+    width: int,
+    height: int,
+    seed: int,
+    entry: tuple[int, int],
+    exit_: tuple[int, int],
+    perfect: bool,
+    colors: dict[str, str],
+    show_pattern: bool,
+) -> tuple[Maze, str]:
+    """Animate maze generation from scratch and then animate its path."""
+
+    def render_step(current_maze: Maze) -> None:
+        print("\033c", end="")
+
+        renderer = MazeRenderer(
+            current_maze,
+            entry,
+            exit_,
+            "",
+            False,
+            colors,
+            show_pattern,
+        )
+        renderer.render()
+
+        time.sleep(0.02)
+
+    maze = Maze(width, height)
+
+    generator = MazeGenerator(
+        maze,
+        seed,
+        perfect,
+        render_step,
+    )
+    lab = generator.generate()
+
+    solver = MazeSolver(lab, entry, exit_)
+    path = solver.solve()
+
+    animate_path(
+        lab,
+        entry,
+        exit_,
+        path,
+        colors,
+        show_pattern,
+    )
+
+    return lab, path
 
 
 def write_maze(
@@ -119,15 +215,24 @@ def main() -> None:
     width = cast(int, config["WIDTH"])
     height = cast(int, config["HEIGHT"])
     seed = cast(int, config["SEED"])
+    perfect = cast(bool, config["PERFECT"])
     entry = cast(tuple[int, int], config["ENTRY"])
     exit_ = cast(tuple[int, int], config["EXIT"])
     output_file = cast(str, config["OUTPUT_FILE"])
 
     show_path = True
+    show_pattern = True
     colors = MazeRenderer.generate_colors()
 
     try:
-        lab, path = generate_maze(width, height, seed, entry, exit_)
+        lab, path = generate_maze(
+            width,
+            height,
+            seed,
+            entry,
+            exit_,
+            perfect,
+        )
 
     except ValueError as error:
         print(f"Error: {error}")
@@ -140,18 +245,35 @@ def main() -> None:
     print("Maze written to", output_file)
 
     while True:
-        renderer = MazeRenderer(lab, entry, exit_, path, show_path, colors)
+        renderer = MazeRenderer(
+            lab,
+            entry,
+            exit_,
+            path,
+            show_path,
+            colors,
+            show_pattern,
+        )
         renderer.render()
 
         print()
         print("=== A-Maze-ing ===")
+
+        if perfect:
+            print("Mode: PERFECT=True")
+        else:
+            print("Mode: PERFECT=False")
+
         print("1: Re-generate a new maze")
         print("2: Show/Hide path from entry to exit")
         print("3: Rotate maze colors")
-        print("4: Quit")
+        print("4: Toggle PERFECT mode")
+        print("5: Toggle 42 highlight")
+        print("6: Animate generation and path")
+        print("7: Quit")
 
         try:
-            choice = input("Choice? (1-4): ")
+            choice = input("Choice? (1-7): ")
 
         except EOFError:
             print("\nQuit")
@@ -167,6 +289,7 @@ def main() -> None:
                 width,
                 height,
                 seed,
+                perfect,
             )
 
             if not write_maze(lab, entry, exit_, path, output_file):
@@ -181,11 +304,69 @@ def main() -> None:
             colors = MazeRenderer.generate_colors()
 
         elif choice == "4":
+            perfect = not perfect
+            seed += 1
+
+            lab, path, entry, exit_ = regenerate_maze(
+                width,
+                height,
+                seed,
+                perfect,
+            )
+
+            if not write_maze(
+                lab,
+                entry,
+                exit_,
+                path,
+                output_file,
+            ):
+                continue
+
+            if perfect:
+                print("Mode changed: PERFECT=True")
+            else:
+                print("Mode changed: PERFECT=False")
+
+        elif choice == "5":
+            show_pattern = not show_pattern
+
+            if show_pattern:
+                print("42 highlight enabled")
+            else:
+                print("42 highlight disabled")
+
+        elif choice == "6":
+            seed += 1
+
+            lab, path = animate_generation_and_path(
+                width,
+                height,
+                seed,
+                entry,
+                exit_,
+                perfect,
+                colors,
+                show_pattern,
+            )
+
+            if not write_maze(
+                lab,
+                entry,
+                exit_,
+                path,
+                output_file,
+            ):
+                continue
+
+            print("Generation and path animation completed")
+
+        elif choice == "7":
             print("Quit")
             break
 
         else:
-            print("Invalid choice. Please enter 1, 2, 3, or 4.")
+            print("Invalid choice. " "Please enter 1, 2, 3, 4, 5, 6, or 7.")
 
 
 if __name__ == "__main__":
